@@ -1,2 +1,2 @@
-# banco
-Projeto Fundamentos de Programação
+# Sistema Bancário.
+Projeto da disciplina Fundamentos de Programação
