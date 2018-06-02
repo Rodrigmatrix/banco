@@ -1,6 +1,6 @@
 typedef struct{
-    char nome[20],sobrenome[100],rua[100],cep[8],num[6],numero[11],data[10],cpf[12],senha[6];
-    int errosenha,gerente,numerocliente,agencia,conta;
+    char nome[20],sobrenome[100],rua[100],cep[8],num[6],numero[11],data[10],cpf[12],senha[7];
+    int errosenha,gerente,numerocliente,agencia,conta,ativo;
     float saldocorrente;
 }cliente;
 typedef struct{

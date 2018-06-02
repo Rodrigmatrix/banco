@@ -3,8 +3,9 @@
 #include <locale.h>
 #include <string.h>
 #include "structs.h"
-#include <time.h>
-int login(funcionario funcionarios[100],cliente clientes[100]);
+#include <unistd.h>
+int login();
+int menu();
 int cadastro();
 int cadastrofuncionario();
 int infofuncionario();
@@ -13,12 +14,13 @@ int info();
 int atualizar();
 char verificarcpf();
 int transferencia();
-int caixa(cliente clientes[100]);
+int caixa();
 int deposito();
 int pagamento();
 int saldo();
 int saque();
 void limpar();
+int continuar();
 /* open – opens a text file.
 fclose – closes a text file.
 feof – detects end-of-file marker in a file.
@@ -28,23 +30,26 @@ fgets – reads a string from a file.
 fputs – prints a string to a file.
 fgetc – reads a character from a file.
 fputc – prints a character to a file. */
-
-int main(){
-    int posicaocadastrocliente=0,posicaocadastrofuncionario=0,agencia=0,conta=0;
+    int i=0,f=0,nconta=0,lg;
     cliente clientes[100];
     funcionario funcionarios[100];
+int main(){
     //Ponteiro para acessar txt
-FILE *file;
-file=fopen("banco.txt", "r+");
+/*  
+    FILE *file;
+    file=fopen("banco.txt", "r+");
     if (file==NULL){
         printf("Não foi possível abrir o banco de dados. O sistema será encerrado");
         return 0;
     }
+*/
 setlocale(LC_ALL, "Portuguese");
+    menu();
+  // fclose(file);
+}
+int menu(){
     int modo;
-    clientes[0].agencia=0;
-    clientes[0].conta=0;
-    clientes[0].errosenha=3;
+    while(1){
     limpar();
     printf("Bem Vindo ao Banco FUP.\n");
     printf("Digite o Modo de operação:\n 1-Administrador\n 2-Caixa Eletrônico\n 3-Sair\n");
@@ -52,7 +57,7 @@ setlocale(LC_ALL, "Portuguese");
         switch(modo){
             case 1:
             limpar();
-            login(funcionarios,clientes);
+            login();
             break;
            
             case 2:
@@ -61,19 +66,20 @@ setlocale(LC_ALL, "Portuguese");
             break;
 
             case 3:
+            limpar();
+            printf("Sistema Encerrado.\n");
             return 0;
             break;
 
             default:
             limpar();
-            printf("Opção Inválida.");
-            return 0;
+            printf("Opção Inválida.\n");
             break;
         }
-   fclose(file);
+    }
 }
-int login(funcionario funcionarios[100],cliente clientes[100]){
-    int opcao,count,n=0,aux=0;
+int login(){
+    int opcao,count,n=0,aux=0,s=1;
     char usuario[20],senha[15];
     setlocale(LC_ALL, "Portuguese");
     //inicio do sistema
@@ -95,14 +101,16 @@ int login(funcionario funcionarios[100],cliente clientes[100]){
         }
         if(aux=0){
             printf("Usuário não encontrado");
+            continuar();
             return 0;
         }
     //verificar senha do usuario
-    printf("Digite a senha: ");
+    printf("Digite a senha:");
     scanf("%s",senha);
     getchar();
+    s=strcmp(senha,funcionarios[n].senha);
     //verificar se a senha está correta
-        if(senha==funcionarios[n].senha || senha[0]=='r' && usuario[0]=='r'){
+        if(senha==0|| senha[0]=='r' && usuario[0]=='r'){
             limpar();
             //printf("Bem vindo %s\n",funcionarios[n].nome);
             printf("Digite a opção desejada:\n");
@@ -140,6 +148,7 @@ int login(funcionario funcionarios[100],cliente clientes[100]){
                     default:
                     limpar();
                     printf("Opção Inválida\n");
+                    sleep(3);
                     return 0;
                     break;
                 }
@@ -147,12 +156,14 @@ int login(funcionario funcionarios[100],cliente clientes[100]){
         else{
             limpar();
             printf("Senha Incorreta\n");
+            sleep(4);
             return 0;
         }
 }
-int caixa(cliente clientes[100]){
-    char senha[6],aux=0,count;
-    int opcao,numcliente=0,agencia,conta;
+int caixa(){
+    //FUNÇÃO CAIXA ELETRÔNICO
+    char senhad[7],aux=0,count;
+    int opcao,numcliente=0,agencia,conta,s=0;
     setlocale(LC_ALL, "Portuguese");
     limpar();
     printf("\nBem vindo ao Banco FUP \n");
@@ -167,23 +178,27 @@ int caixa(cliente clientes[100]){
                 break;
             }
         }
-        if(aux==0){
+        if(aux==0 || clientes[numcliente].ativo==0){
             printf("Agência ou Conta não encontrados\n");
+            sleep(4);
             //tentar novamente
             return 0;
         }
         //procurar por dados em agencia e conta
         printf("Digite a senha: \n");
         //verificar senha correta
-        scanf("%s",senha);
+        scanf("%s",senhad);
         getchar();
+        s=strcmp(senhad,clientes[numcliente].senha);
         if(clientes[numcliente].errosenha==0){
             printf("Sua conta está bloqueada. Entre em contato com o seu gerente\n");
-            return 0;
+            sleep(4);
+            return 0;  
         }
-        if( (senha==clientes[numcliente].senha) && (clientes[numcliente].errosenha!=0) ){
+        if( (s==0) && (clientes[numcliente].errosenha!=0) ){
+            lg=numcliente;
             clientes[numcliente].errosenha=3;
-            system("clear");
+            limpar();
             printf("\nBem Vindo %s\n",clientes[numcliente].nome);
             printf("Digite a operação desejada:\n");
             printf(" 1-Transferência\n 2-Depósito\n 3-Pagamento de conta\n 4-Saldo da conta\n 5-Saque\n");
@@ -226,81 +241,98 @@ int caixa(cliente clientes[100]){
             clientes[numcliente].errosenha--;
             limpar();
             printf(" Senha Incorreta.\n Número de tentativas restantes: %d\n",clientes[numcliente].errosenha);
+            continuar();
             return 0;
         }
 }
-int cadastro(int posicaocadastrocliente,cliente clientes[100],int agencia,int conta){
+int cadastro(){
     //função de cadastro de cliente
-    int numero;
+    int numero,agenciac,count,aux=0;
+    char cpfe[13];
         limpar();
+        printf("%d\n",i);
+        printf("%d\n",nconta);
         printf("Digite o primeiro nome do cliente:\n");
-        scanf("%s",clientes[posicaocadastrocliente].nome);
+        scanf("%s",clientes[i].nome);
         getchar();
         printf("Digite o sobrenome do cliente:\n");
-        scanf("%s",clientes[posicaocadastrocliente].sobrenome);
+        scanf("%s",clientes[i].sobrenome);
         getchar();
         printf("Endereço:\n");
-        scanf("%s",clientes[posicaocadastrocliente].rua);
+        scanf("%s",clientes[i].rua);
         getchar();
         printf("Número da Casa/Apt:\n");
-        scanf("%s",clientes[posicaocadastrocliente].numero);
+        scanf("%s",clientes[i].numero);
         getchar();
         printf("CEP sem pontos e traços:\n");
         //cep>8 invalido
-        scanf("%s",clientes[posicaocadastrocliente].cep);
+        scanf("%s",clientes[i].cep);
         printf("Digite o CPF do cliente:\n");
-        verificarcpf();
+        //verificarcpf();
+        //strcpy(cpfe,clientes[i].cpf);
         printf("Digite a data de nascimento no formato 00/00/0000: \n");
-        scanf("%s",clientes[posicaocadastrocliente].data);
+        scanf("%s",clientes[i].data);
         getchar();
+        printf("Digite a senha para a conta do cliente:");
+        scanf("%s",clientes[i].senha);
+        getchar();
+        printf("Digite a Agência:");
+        scanf("%d",&agenciac);
+        clientes[i].errosenha=3;
+        clientes[i].saldocorrente=0;
+        clientes[i].numerocliente=i;
+        clientes[i].agencia=agenciac;
+        clientes[i].conta=nconta;
+        clientes[i].ativo=1;
         limpar();
         printf("Cadastro Realizado com sucesso\n");
-        printf("Número da Agência= %d\n",agencia);
-        printf("Número da conta= %d\n",conta);
-        clientes[posicaocadastrocliente].errosenha=3;
-        clientes[posicaocadastrocliente].saldocorrente=0;
-        clientes[posicaocadastrocliente].numerocliente=posicaocadastrocliente;
-        clientes[posicaocadastrocliente].agencia=agencia;
-        clientes[posicaocadastrocliente].conta=conta;
-        conta++;
-        posicaocadastrocliente++;
+        printf("Número do Cliente:%d\n",clientes[i].numerocliente);
+        printf("Erro Senha:%d\n",clientes[i].errosenha);
+        printf("Número da Agência:%d\n",agenciac);
+        printf("Número da conta:%d\n",nconta);
+        printf("Senha:%s\n",clientes[i].senha);
+        printf("Cpf %s",clientes[i].cpf);
+        nconta++;
+        i++;
+        continuar();
 }
-int cadastrofuncionario(int posicaocadastrofuncionario,funcionario funcionarios[100]){
+int cadastrofuncionario(){
     system("clear");
     //função para cadastrar funcionário
         int numero;
         char usuario,senha,senhaanterior;
         int codigogerente=1,codigoatendente=1;
         printf("Digite o primeiro nome do Funcionário:\n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].nome);
+        scanf("%s",funcionarios[f].nome);
         getchar();
         printf("Digite o sobrenome:\n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].sobrenome);
+        scanf("%s",funcionarios[f].sobrenome);
         printf("Endereço:\n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].rua);
+        scanf("%s",funcionarios[f].rua);
         printf("Número da Casa/Apt:\n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].num);
+        scanf("%s",funcionarios[f].num);
         printf("CEP sem pontos e traços:\n");
         //cep>8 invalido
-        scanf("%s",funcionarios[posicaocadastrofuncionario].cep);
+        scanf("%s",funcionarios[f].cep);
         printf("Digite o CPF do funcionário:\n");
         verificarcpf();
         printf("Digite a data de nascimento no formato 00/00/0000: \n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].data);
+        scanf("%s",funcionarios[f].data);
         printf("Digite o cargo do funcionário:");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].cargo);
+        scanf("%s",funcionarios[f].cargo);
         printf("Digite o usuário para login no sistema\n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].usuario);
+        scanf("%s",funcionarios[f].usuario);
         getchar();
         printf("Digite a senha:\n");
-        scanf("%s",funcionarios[posicaocadastrofuncionario].senha);
-        funcionarios[posicaocadastrofuncionario].numfun=posicaocadastrofuncionario;
-        printf("Cadastro realizado com sucesso. Número do gerente: %d",funcionarios[posicaocadastrofuncionario].numfun);
-        posicaocadastrofuncionario++;
+        scanf("%s",funcionarios[f].senha);
+        funcionarios[f].numfun=f;
+        printf("Cadastro realizado com sucesso. Número do gerente: %d\n",funcionarios[f].numfun);
+        continuar();
+        f++;
 }
-int info(cliente clientes[100],funcionario funcionarios[100]){
+int info(){
     //função para pesquisar cliente ou funcionário no banco de dados
-    int n,cliente,funcionario,count,aux=0,numero=0,op,qtd=0,vf=1;
+    int n,cliente,funcionario,count,aux=0,numero=0,op,qtd=0,s=1;
     char nome[20];
     printf("Digite 1 para cliente ou 2 para funcionário: ");
     scanf("%d",&n);
@@ -316,18 +348,22 @@ int info(cliente clientes[100],funcionario funcionarios[100]){
             scanf("%s",nome);
             getchar();
             printf("Resultado da busca:\n");
+            s=strcmp(nome,clientes[count].nome);
                 for(count=0;count<100;count++){
-                    vf=strcmp(nome,clientes[count].nome);
-                    if(vf==0){
+                    if(s==0){
                         qtd++;
                         printf("%d-%s %s\n",qtd,clientes[count].nome,clientes[count].sobrenome);
                         printf("  Rua:%s Cep:%s Telefone:%s\n",clientes[count].rua,clientes[count].cep,clientes[count].numero);
                         printf("  Cpf:%s Data de Nascimento:%s Número Gerente:%d\n",clientes[count].cpf,clientes[count].data,clientes[count].gerente);
                         printf("  Saldo Conta:%f Agência:%d Conta:%d\n\n",clientes[count].saldocorrente,clientes[count].agencia,clientes[count].conta);
+                    }
+                    if(count=100 && qtd!=0){
+                        continuar();
                     }  
                 }
                 if(qtd==0){
                     printf("Nenhum cliente com o nome %s encontrado.\n",nome);
+                    continuar();
                 }
             break;
 
@@ -344,16 +380,19 @@ int info(cliente clientes[100],funcionario funcionarios[100]){
             }
             if(aux==0){
                 printf("Cliente não encontrado.\n");
+                sleep(4);
                 return 0;
             }
             else{
                 printf("Cliente %s %s. Número do cliente: %d\n",clientes[numero].nome,clientes[numero].sobrenome,clientes[numero].numerocliente);
+                continuar();
                 return 0;
             }
             break;
 
             default:
             printf("Opção Inválida.\n");
+            sleep(4);
             return 0;
         }
         
@@ -369,6 +408,7 @@ int info(cliente clientes[100],funcionario funcionarios[100]){
             printf("Digite o número do funcionário: ");
             scanf("%d",&funcionario);
             printf("Resultado da busca:\n");
+            s=strcmp(nome,clientes[count].nome);
                 for(count=0;count<100;count++){
                     if(funcionario==funcionarios[count].numfun){
                     aux=1;
@@ -395,6 +435,7 @@ int info(cliente clientes[100],funcionario funcionarios[100]){
 }
 int atualizar(){
     //função para atualizar cadastro de cliente ou funcionário
+
     limpar();
 
 }
@@ -443,51 +484,61 @@ char verificarcpf(){
 }
 int transferencia(){
     limpar();
-    printf("Digite o número da conta:\n");
-    printf("Digite a Agência: ");
+    int contatrans;
+    //CUIDADOSNGRWIUGRWUGREUG
+    contatrans=infocliente();
 }
 int deposito(){
-    printf("Digite o número da conta:\n");
-    printf("Digite a Agência: ");
+    float deposito,d;
+    printf("Digite o valor do depósito:");
+    scanf("%f",&deposito);
+    printf("\nInsira o envelope na máquina e digite 1:");
+    scanf("%d",&d);
+    clientes[lg].saldocorrente+=deposito;
+    printf("Depósito realizado com sucesso.\nNovo saldo da conta:%f",clientes[lg].saldocorrente);
+    sleep(5);
+
 }
 int pagamento(){
     float valor;
     limpar();
     printf("Digite o valor do boleto:\n");
     scanf("%f",&valor);
-    /*if(valor<clientes[].saldocorrente){
-        clientes[].saldocorrente-=saque;
+    if(valor<clientes[lg].saldocorrente){
+        clientes[lg].saldocorrente-=valor;
         limpar();
-        printf("Pagamento realizado com sucesso.\n");
+        printf("Pagamento realizado com sucesso.\nNovo Saldo da conta:%.2f\n",clientes[lg].saldocorrente);
+        sleep(4);
     }
     else{
         limpar();
         printf("Saldo Insuficiente.\n Operação Cancelada\n");
+        sleep(4);
     }
-    */
 }
 int saque(){
     float saque;
     limpar();
     printf("Digite o valor do saque:\n");
     scanf("%f",saque);
-    /*if(saque<clientes[].saldocorrente){
-        clientes[].saldocorrente-=saque;
-        limpar();
-        printf("Operação realizada com sucesso.\n Retire o dinheiro.\n");
-    }
-    else{
+    if(saque>clientes[lg].saldocorrente){
         limpar();
         printf("Saldo Insuficiente.\n Operação Cancelada\n");
-    }*/
+        sleep(4);
+    }
+    else{
+        clientes[lg].saldocorrente-=saque;
+        limpar();
+        printf("Operação realizada com sucesso.\n Retire o dinheiro.\n");
+        printf("Novo Saldo da conta:%.2f\n",clientes[lg].saldocorrente);
+        sleep(6);
+    }
 }
 int saldo(){
+    //exibir saldo de acordo com o cliente
     limpar();
-    printf("Aguarde...");
-    //printf("Saldo disponível na conta corrente= %f\n",clientes[].saldocorrente);
-    //delay(3);
-    //exibir saldo de acordo com o cliente 
-    //printf("Saldo disponível na conta corrente: %.2f\n Saldo disponível na conta poupança: %.2f",saldocorrente,saldopoup);
+    printf("Saldo disponível na conta corrente=%.2f\n",clientes[lg].saldocorrente);
+    continuar();
 }
 void limpar(){
     system("clear");
@@ -495,7 +546,7 @@ void limpar(){
     printf("----------------------Banco FUP---------------------\n");
     printf("----------------------------------------------------\n");
 }
-int infofuncionario(funcionario funcionarios[100]){
+int infofuncionario(){
     int codigo,aux=0,count,n=0;
     limpar();
     printf("Digite o código do funcionário:\n");
@@ -513,7 +564,7 @@ int infofuncionario(funcionario funcionarios[100]){
         return n;
     }
 }
-int infocliente(cliente clientes[100]){
+int infocliente(){
     int codigo,aux=0,count,n=0,ag,ct;
     limpar();
     //numero da conta de agencia
@@ -529,9 +580,15 @@ int infocliente(cliente clientes[100]){
     }
     if(aux==0){
         printf("Cliente não encontrado.\n");
+        sleep(4);
         return 0;
     }
     else{
         return n;
     }
+}
+int continuar(){
+    int sair;
+    printf("\n1-Continuar\n2-Sair\n");
+    scanf("%d",&sair);
 }
