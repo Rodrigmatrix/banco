@@ -147,11 +147,10 @@ void cadastro(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, in
 
 void cadastrofuncionario(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
         //função para cadastrar funcionário
-        limpar();
-        printf("%i\n",*f);
         int numero,aux=1,count;
         char usuariod[20];
-        printf("Digite o primeiro nome do Funcionário:\n");
+        limpar();
+        printf("Digite o nome completo do Funcionário:\n");
         scanf("%s",funcionarios[*f].nome);
         getchar();
         printf("Digite o sobrenome:\n");
@@ -285,7 +284,7 @@ void info(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f
                 if(qtd==0){
                     printf("Nenhum cliente com o nome %s encontrado.\n",nome);   
                 }
-                continuar();
+            continuar();
             break;
 
             case 2:
@@ -317,7 +316,6 @@ void info(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f
         printf("Opção Inválida.\n");
         continuar();
         break;
-
     }
 }
 void atualizar(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
