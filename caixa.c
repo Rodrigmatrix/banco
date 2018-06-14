@@ -6,7 +6,7 @@
 #include "funcoes.h"
 #include <unistd.h>
 void caixa(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
-    //FUNÇÃO CAIXA ELETRÔNICO
+    //login do caixa eletronico
     char senhad[7],aux=0,count;
     int opcao,numcliente=0,agencia,conta,s=0;
     setlocale(LC_ALL, "Portuguese");
@@ -27,7 +27,6 @@ void caixa(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
             printf("Agência ou Conta não encontrados\n");
             sleep(4);
             //tentar novamente
-            return;
         }
         //procurar por dados em agencia e conta
         printf("Digite a senha: \n");
@@ -36,9 +35,9 @@ void caixa(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
         getchar();
         s=strcmp(senhad,clientes[numcliente].senha);
         if(clientes[numcliente].errosenha==0){
+            //verificando se a conta está bloqueada
             printf("Sua conta está bloqueada. Entre em contato com o seu gerente\n");
-            sleep(4);
-            return;  
+            sleep(4); 
         }
         if( (s==0) && (clientes[numcliente].errosenha!=0) ){
             *loginC=numcliente;
@@ -81,13 +80,13 @@ void caixa(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
                     default:
                     limpar();
                     printf("Opção Inválida");
-                    return;
+                    continuar();
                     break;
                 }
             }
         }
         else{
-            //salvar no banco de dados do cliente o erro
+            //salvar na struct do cliente o erro ao digitar a senha
             clientes[numcliente].errosenha--;
             limpar();
             printf(" Senha Incorreta.\n Número de tentativas restantes: %d\n",clientes[numcliente].errosenha);
@@ -96,15 +95,16 @@ void caixa(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
         }    
 }
 void transferencia(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
+    //transferindo dinheiro da conta logada para conta digitada
     int lg=*loginC;
     limpar();
     int contatrans;
     float valor;
     printf("Digite as unformações da conta em que o dinheiro será transferido:\n");
-    contatrans=infocliente(clientes,funcionarios,loginC,i,f,nconta);
+    contatrans=infocliente(clientes,funcionarios,loginC,i,f,nconta);//pegando dados do cliente em que sera feito o deposito
     printf("Digite o valor da transferência:");
     scanf("%f",&valor);
-    if(valor>clientes[lg].saldocorrente){
+    if(valor>clientes[lg].saldocorrente){//verificando se tem saldo disponivel
         printf("Saldo Indisponível.\nOperação Cancelada.\n");
         continuar();
     }
@@ -116,6 +116,7 @@ void transferencia(cliente *clientes,funcionario *funcionarios,int *loginC,int *
     }
 }
 void deposito(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
+    //depositando dinheiro na conta logada
     float deposito,d;
     int lg=*loginC;
     printf("Digite o valor do depósito:");
@@ -127,15 +128,16 @@ void deposito(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, in
     continuar();
 }
 void pagamento(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
+    //pagamento de boleto
     int lg=*loginC;
     float valor;
     limpar();
     printf("Digite o valor do boleto:\n");
     scanf("%f",&valor);
-    if(valor<=clientes[lg].saldocorrente){
+    if(valor<=clientes[lg].saldocorrente){//verificando se tem saldo suficiente
         clientes[lg].saldocorrente-=valor;
         limpar();
-        printf("Pagamento realizado com sucesso.\nNovo Saldo da conta:%.2f\n",clientes[lg].saldocorrente);
+        printf("Pagamento realizado com sucesso.\nNovo Saldo da conta:%.2f\n",clientes[lg].saldocorrente);//novo saldo
         continuar();
     }
     else{
@@ -152,14 +154,15 @@ void saque(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
     scanf("%f",&saque);
     if(saque>clientes[lg].saldocorrente){
         limpar();
+        //verificando se o saldo é suficiente
         printf("Saldo Insuficiente.\n Operação Cancelada\n");
         sleep(4);
     }
     else{
-        clientes[lg].saldocorrente-=saque;
+        clientes[lg].saldocorrente-=saque;//tirando o valor da conta e autorizando o saque
         limpar();
         printf("Operação realizada com sucesso.\n Retire o dinheiro.\n");
-        printf("Novo Saldo da conta:%.2f\n",clientes[lg].saldocorrente);
+        printf("Novo Saldo da conta:%.2f\n",clientes[lg].saldocorrente);//novo saldo
         continuar();
     }
 }

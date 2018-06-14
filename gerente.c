@@ -8,7 +8,7 @@
 void login(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f, int *nconta){
     int opcao,count,n=0,aux=0,s=1;
     char usuario[20],senha[15];
-    //inicio do sistema
+    //inicio do login do funcionario
     limpar();
     printf("Bem Vindo ao sistema de gerenciamento do Banco FUP.\n");
     printf("Digite o usuário: ");
@@ -41,7 +41,7 @@ void login(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
             if(aux==2){//verificando se quem esta logado é o root
                 printf("Bem vindo root\n");
             }
-            else{
+            else{//imprimindo o nome do gerente logado
                 printf("Bem vindo %s\n",funcionarios[n].nome);
             }
             
@@ -97,8 +97,6 @@ void cadastro(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, in
     //função de cadastro de cliente
     int numero,agenciac,count,aux=0;
         limpar();
-        printf("%i\n",*i); // Int i, incrementar
-        printf("%d\n",*nconta); // numero da conta, era pra incrementar
         printf("Digite o primeiro nome do cliente:\n");
         scanf("%s",clientes[*i].nome);
         getchar();
@@ -300,7 +298,6 @@ void info(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f
                 }
                 if(aux==0){
                     printf("Funcionário não encontrado.\n");
-                    continuar();
                 }
                 else{
                     printf("Resultado da busca:\\n");
@@ -311,6 +308,7 @@ void info(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *f
             continuar();
             break;
         }
+        break;
 
         default:
         printf("Opção Inválida.\n");
