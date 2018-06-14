@@ -26,6 +26,7 @@ void caixa(cliente *clientes,funcionario *funcionarios,int *loginC,int *i, int *
         if(aux==0 || clientes[numcliente].ativo==0){
             printf("Agência ou Conta não encontrados\n");
             sleep(4);
+            return;
             //tentar novamente
         }
         //procurar por dados em agencia e conta
